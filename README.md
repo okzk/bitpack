@@ -1,1 +1,5 @@
 # bitpack
+
+## License
+
+MIT
