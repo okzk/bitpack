@@ -50,17 +50,24 @@ func TestSetGet(t *testing.T) {
 		b.Set(i, uint64(i%128))
 	}
 	for i := 0; i < n; i++ {
-		b.Set(i, uint64(i*37%128))
+		if b.Get(i) != uint64(i%128) {
+			t.Error(i, b.Get(i), uint64(i%128))
+		}
 	}
 
 	for i := 0; i < n; i++ {
-		if b.Get(i)[0] != uint64(i*37%128) {
+		b.Set(i, uint64(i*37%128))
+	}
+	for i := 0; i < n; i++ {
+		if b.Get(i) != uint64(i*37%128) {
 			t.Error(i, b.Get(i), uint64(i*37%128))
 		}
 	}
 }
 
 func TestWriteRead(t *testing.T) {
+	tmpFile := "hoge.tmp"
+
 	n := 255
 	b := New(n, 127)
 
@@ -68,40 +75,40 @@ func TestWriteRead(t *testing.T) {
 		b.Set(i, uint64(i*37%128))
 	}
 
-	err := b.WriteFile("hoge.tmp")
+	err := b.WriteFile(tmpFile)
 	if err != nil {
 		t.Error(err)
 		t.FailNow()
 	}
-	defer os.Remove("hoge.tmp")
+	defer os.Remove(tmpFile)
 
-	b, err = ReadFile("hoge.tmp")
+	b, err = ReadFile(tmpFile)
 	if err != nil {
 		t.Error(err)
 		t.FailNow()
 	}
 
 	for i := 0; i < n; i++ {
-		if b.Get(i)[0] != uint64(i*37%128) {
+		if b.Get(i) != uint64(i*37%128) {
 			t.Error(i, b.Get(i), uint64(i*37%128))
 		}
 	}
 }
 
 func BenchmarkSet(b *testing.B) {
-	bp := New(50000000, 4*1024*1024*1024*1024, 10*1024*1024)
+	bp := New(5000000, 1<<36)
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		bp.Set(i*37%50000000, 0, 0)
+		bp.Set(i*47%5000000, 0)
 	}
 }
 
 func BenchmarkGet(b *testing.B) {
-	bp := New(50000000, 4*1024*1024*1024*1024, 10*1024*1024)
+	bp := New(5000000, 1<<36)
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		bp.Get(i * 37 % 50000000)
+		bp.Get(i * 47 % 5000000)
 	}
 }
